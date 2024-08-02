@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -46,12 +47,41 @@ func matchLine(line []byte, pattern string) (bool, error) {
 
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
+	numeric := "0123456789"
+	alphabetMin := makeAlphabet(optionsAlphabet{minuscle: true})
+	alphabetMai := makeAlphabet(optionsAlphabet{minuscle: false})
 
 	if pattern == "\\d" {
-		ok = bytes.ContainsAny(line, "0123456789")
+		ok = bytes.ContainsAny(line, numeric)
+	} else if pattern == "\\w" {
+		ok = bytes.ContainsAny(line, numeric+alphabetMai+alphabetMin)
+	} else if strings.HasPrefix(pattern, "[") {
+		positiveChars := strings.TrimSuffix(strings.TrimPrefix(pattern, "["), "]")
+		ok = bytes.ContainsAny(line, positiveChars)
 	} else {
-		// Uncomment this to pass the first stage
 		ok = bytes.ContainsAny(line, pattern)
 	}
+
 	return ok, nil
+}
+
+type optionsAlphabet struct {
+	minuscle bool
+}
+
+func makeAlphabet(options optionsAlphabet) string {
+	alphabet := ""
+	start := 65
+	end := 90
+
+	if options.minuscle {
+		start = 97
+		end = 122
+	}
+
+	for i := start; i <= end; i++ {
+		alphabet = alphabet + string(i)
+	}
+
+	return alphabet
 }
